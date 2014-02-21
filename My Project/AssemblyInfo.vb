@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription(".NET API for VK.com")> 
 <Assembly: AssemblyCompany("")> 
 <Assembly: AssemblyProduct("vk_api")> 
-<Assembly: AssemblyCopyright("Copyright © perk11 2013")> 
+<Assembly: AssemblyCopyright("Copyright © perk11 2014")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.0.5")> 
-<Assembly: AssemblyFileVersion("1.0.5")> 
+<Assembly: AssemblyVersion("1.0.6")> 
+<Assembly: AssemblyFileVersion("1.0.6")> 

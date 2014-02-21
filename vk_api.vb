@@ -521,6 +521,30 @@ Public Class api
             End While
             Return result
         End Function
+        Public Shared Shadows Function getById(group_id As String, Optional fields As List(Of String) = Nothing) As group
+            Return getById(New List(Of String)({group_id}), fields)(0)
+        End Function
+        Public Shared Shadows Function getById(group_ids As List(Of String), Optional fields As List(Of String) = Nothing) As List(Of group)
+            Dim result As New List(Of group), parameters As New Dictionary(Of String, String)
+            With parameters
+                If group_ids.Count = 1 Then .Add("group_id", group_ids(0)) Else .Add("group_ids", String.Join(",", group_ids))
+                .Add("V", "5.11")
+                If Not IsNothing(fields) Then .Add("filter", String.Join(",", fields))
+            End With
+            Dim s As XmlTextReader = api_request_no_parse("groups.getById", parameters)
+
+            While s.Read
+
+                If s.NodeType = Xml.XmlNodeType.Element Then
+                    If s.Name = "group" Then
+                        result.Add(GroupParser(s.ReadSubtree))
+                    ElseIf s.Name = "error" Then
+                        error_handler_TextReader(s, "groups.get")
+                    End If
+                End If
+            End While
+            Return result
+        End Function
         Private Shared Function GroupParser(group As XmlReader) As group
             'Поля из fields НЕ парсятся, надо дописать при необходимости
             Dim result As New group
@@ -528,11 +552,11 @@ Public Class api
                 If group.NodeType = XmlNodeType.Element Then
                     With result
                         Select Case group.Name
-                            Case "gid"
+                            Case "gid", "id"
                                 .gid = group.ReadElementContentAsLong
                             Case "name"
                                 .name = group.ReadElementContentAsString
-                            Case "screenname"
+                            Case "screenname", "screen_name"
                                 .screenname = group.ReadElementContentAsString
                             Case "is_closed"
                                 .is_closed = IIf(group.ReadElementContentAsInt = 1, True, False)
@@ -546,11 +570,11 @@ Public Class api
                                 Catch
                                     .type = groups.group.grouptype.unknown
                                 End Try
-                            Case "photo"
+                            Case "photo", "photo_50"
                                 .photo = group.ReadElementContentAsString
-                            Case "photo_medium"
+                            Case "photo_medium", "photo_100"
                                 .photo_medium = group.ReadElementContentAsString
-                            Case "photo_big"
+                            Case "photo_big", "photo_200"
                                 .photo_big = group.ReadElementContentAsString
                         End Select
                     End With
@@ -558,6 +582,7 @@ Public Class api
             End While
             Return result
         End Function
+
         Public Enum getfilter
             admin
             editor
@@ -1375,8 +1400,8 @@ Public Class api
             Next
             Return d(n, m)
         End Function
-        Public Shared Function get_userid_from_string(txt As String) As ULong
-            Dim uid As ULong = 0
+        Public Shared Function get_userid_from_string(txt As String) As Long
+            Dim uid As Long = 0
             If txt = "" Then
 
             ElseIf ULong.TryParse(txt, uid) Then
@@ -1384,7 +1409,7 @@ Public Class api
             ElseIf txt.IndexOf("vk.com/") > -1 Then
                 uid = get_userid_from_string(txt.Substring(txt.IndexOf("vk.com/") + 7))
             ElseIf txt.Substring(0, 2) = "id" Then
-                ULong.TryParse(txt.Substring(2, txt.Length - 2), uid)
+                Long.TryParse(txt.Substring(2, txt.Length - 2), uid)
             Else
                 Try
                     ULong.TryParse(users._get(New List(Of String)({txt}))(0).uid, uid)
