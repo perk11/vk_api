@@ -977,6 +977,40 @@ Public Class api
 
     End Class
     Public Class photos
+        Public Shared Function getCount(Optional owner_id As Int64 = 0, Optional album_id As String = Nothing) As UInt32
+            Dim parameters As New Dictionary(Of String, String)
+            If owner_id > 0 Then parameters.Add("owner_id", owner_id)
+            parameters.Add("count", 1)
+            parameters.Add("V", "5.11")
+            Dim doc As XmlDocument = api_request("photos.get", parameters)
+            Dim count As Xml.XmlNode = doc.SelectNodes("/response/count").Item(0)
+            Return Long.Parse(count.InnerText)
+        End Function
+        Public Shared Function _get(Optional owner_id As Int64 = 0, Optional album_id As String = Nothing, Optional photo_ids As List(Of String) = Nothing, Optional rev As Boolean = True, Optional extended As Boolean = False, Optional offset As ULong = 0, Optional count As ULong = 0) As List(Of photo)
+            Dim result As New List(Of photo)
+            Dim parameters As New Dictionary(Of String, String)
+            With parameters
+                If owner_id <> 0 Then .Add("owner_id", owner_id)
+                If Not IsNothing(album_id) Then .Add("album_id", album_id)
+                If Not IsNothing(photo_ids) Then .Add("photo_ids", String.Join(",", photo_ids))
+                parameters.Add("rev", IIf(rev, "1", "0"))
+                parameters.Add("extended", IIf(extended, "1", "0"))
+                If count > 0 Then
+                    If count > 1000 Then
+                        result.AddRange(_get(owner_id, album_id, photo_ids, rev, extended, offset + 1000, count - 1000))
+                        .Add("count", 1000)
+                    Else
+                        .Add("count", count)
+                    End If
+
+                End If
+                If offset > 0 Then
+                    .Add("offset", offset)
+                End If
+            End With
+            result.AddRange(PhotoParser(api_request_no_parse("photos.get", parameters), "photos.get"))
+            Return result
+        End Function
         Public Shared Function getAllCount(Optional owner_id As Int64 = 0) As UInt32
             Dim parameters As New Dictionary(Of String, String)
             If owner_id > 0 Then parameters.Add("owner_id", owner_id)
@@ -984,6 +1018,14 @@ Public Class api
             Dim doc As XmlDocument = api_request("photos.getAll", parameters)
             Dim count As Xml.XmlNode = doc.SelectNodes("/response/count").Item(0)
             Return Long.Parse(count.InnerText)
+        End Function
+        Public Shared Function getAllByAlbums(Optional owner_id As Int64 = 0, Optional rev As Boolean = True, Optional extended As Boolean = False) As List(Of photo) 'Not vk 
+            Dim result As New List(Of photo)
+            Dim albums As List(Of album) = getAlbums(owner_id)
+            For Each album In albums
+                result.AddRange(_get(0, album.aid))
+            Next
+            Return result
         End Function
         Public Shared Function getAll(Optional owner_id As Int64 = 0, Optional no_service_albums As Boolean = False, Optional offset As UInt32 = 0, Optional count As UInt32 = 0, Optional extended As Boolean = False) As List(Of photo)
             Dim result As New List(Of photo)
