@@ -1144,15 +1144,15 @@ Public Class api
                             If photo.NodeType = XmlNodeType.Element Then
                                 With curr_photo
                                     Select Case photo.Name
-                                        Case "pid"
+                                        Case "pid", "id"
                                             .pid = photo.ReadElementContentAsLong
-                                        Case "aid"
+                                        Case "aid", "album_id"
                                             .aid = photo.ReadElementContentAsLong
                                         Case "owner_id"
                                             .owner_id = photo.ReadElementContentAsLong
                                         Case "user_id"
                                             .user_id = photo.ReadElementContentAsLong
-                                        Case "created"
+                                        Case "created", "date"
                                             .created = New Date(1970, 1, 1, 0, 0, 0, 0).AddSeconds(photo.ReadElementContentAsLong).ToLocalTime ' Unix time to Date conversion
                                         Case "src"
                                             .src = photo.ReadElementContentAsString
