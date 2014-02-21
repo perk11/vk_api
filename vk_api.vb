@@ -1404,10 +1404,9 @@ Public Class api
 
     Public Shared Sub Logout()
         Dim auth As New auth_window
-        '  auth.WebBrowser1.Navigate(vkauthurl & "&revoke=1") 'This is an only known reliant way to actually make cookies ineffective
-        ' auth.WebBrowser1.Navigate("https://oauth.vk.com/oauth/logout?hash=f398e2d9497d7a6d53&success_url=Y2xpZW50X2lkPTM0MDEwMDgmcmVkaXJlY3RfdXJpPWh0dHAlM0ElMkYlMkZvYXV0aC52ay5jb20lMkZibGFuay5odG1sJnJlc3BvbnNlX3R5cGU9dG9rZW4mc2NvcGU9NCZzdGF0ZT0mcmV2b2tlPTEmZGlzcGxheT1wYWdl&success_hash=dce8f92b2cb731189b")
-        auth.WebBrowser1.Navigate("https://vk.com")
-        auth.WebBrowser1.Navigate("javascript:void((function(){var a,b,c,e,f;f=0;a=document.cookie.split('; ');for(e=0;e<a.length&&a[e];e++){f++;for(b='.'+location.host;b;b=b.replace(/^(?:%5C.|[^%5C.]+)/,'')){for(c=location.pathname;c;c=c.replace(/.$/,'')){document.cookie=(a[e]+'; domain='+b+'; path='+c+'; expires='+new Date((new Date()).getTime()-1e11).toGMTString());}}}})())")
+        auth.WebBrowser1.Navigate(vkauthurl & "&revoke=1") 'This is an only known reliant way to actually make cookies ineffective
+        'auth.WebBrowser1.Navigate("https://oauth.vk.com/oauth/logout?hash=f398e2d9497d7a6d53&success_url=Y2xpZW50X2lkPTM0MDEwMDgmcmVkaXJlY3RfdXJpPWh0dHAlM0ElMkYlMkZvYXV0aC52ay5jb20lMkZibGFuay5odG1sJnJlc3BvbnNlX3R5cGU9dG9rZW4mc2NvcGU9NCZzdGF0ZT0mcmV2b2tlPTEmZGlzcGxheT1wYWdl&success_hash=dce8f92b2cb731189b")
+
         token = Nothing
         Application.DoEvents()
     End Sub

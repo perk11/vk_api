@@ -59,6 +59,7 @@ Public Class auth_window
         ElseIf InStr(currurl, "cancel=1") Or InStr(currurl, "user_denied") > 0 Then
             notify("vk authorization canceled")
             WebBrowser1.Navigate(vk.api.vkauthurl)
+
         Else
             '  If MainWindow.Timer1.Enabled Then MainWindow.Timer1.Enabled = False
             '   vk_api.showform = True
@@ -97,7 +98,4 @@ Public Class auth_window
         Me.Visible = False
     End Sub
 
-    Private Sub WebBrowser1_DocumentCompleted_1(sender As System.Object, e As System.Windows.Forms.WebBrowserDocumentCompletedEventArgs) Handles WebBrowser1.DocumentCompleted
-
-    End Sub
 End Class
