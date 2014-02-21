@@ -576,6 +576,8 @@ Public Class api
                                 .photo_medium = group.ReadElementContentAsString
                             Case "photo_big", "photo_200"
                                 .photo_big = group.ReadElementContentAsString
+                            Case "error"
+                                error_handler_TextReader(group)
                         End Select
                     End With
                 End If
@@ -1023,7 +1025,7 @@ Public Class api
             Dim result As New List(Of photo)
             Dim albums As List(Of album) = getAlbums(owner_id)
             For Each album In albums
-                result.AddRange(_get(0, album.aid))
+                result.AddRange(_get(owner_id, album.aid))
             Next
             Return result
         End Function
@@ -1145,6 +1147,8 @@ Public Class api
                                             .aid = photo.ReadElementContentAsLong
                                         Case "owner_id"
                                             .owner_id = photo.ReadElementContentAsLong
+                                        Case "user_id"
+                                            .user_id = photo.ReadElementContentAsLong
                                         Case "created"
                                             .created = New Date(1970, 1, 1, 0, 0, 0, 0).AddSeconds(photo.ReadElementContentAsLong).ToLocalTime ' Unix time to Date conversion
                                         Case "src"
@@ -1166,6 +1170,8 @@ Public Class api
                             End If
                         End While
                         result.Add(curr_photo)
+                    ElseIf s.Name = "error" Then
+                        error_handler_TextReader(s, action)
                     End If
                 End If
 
@@ -1173,7 +1179,7 @@ Public Class api
             Return result
         End Function
         Public Class photo
-            Public pid As UInt64, aid As Long, owner_id As Int64, created As Date, src As String, src_small As String, src_big As String, src_xbig As String, src_xxbig As String, text As String
+            Public pid As UInt64, aid As Long, owner_id As Int64, created As Date, src As String, src_small As String, src_big As String, src_xbig As String, src_xxbig As String, text As String, user_id As ULong
             Public ReadOnly Property src_largest As String
                 Get
                     If Len(src_xxbig) > 0 Then
