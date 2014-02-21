@@ -1181,7 +1181,8 @@ Public Class api
             End While
             Return result
         End Function
-        Public Class photo
+        <Serializable()> Public Class photo
+
             Public pid As UInt64, aid As Long, owner_id As Int64, created As Date, src As String, src_small As String, src_big As String, src_xbig As String, src_xxbig As String, text As String, user_id As ULong
             Public ReadOnly Property src_largest As String
                 Get
