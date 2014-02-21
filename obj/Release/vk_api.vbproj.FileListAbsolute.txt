@@ -1,0 +1,13 @@
+C:\Users\pereyaslov\Documents\Visual Studio 2010\Projects\lastfmtovk\vk_api\obj\Release\vk.auth_window.resources
+C:\Users\pereyaslov\Documents\Visual Studio 2010\Projects\lastfmtovk\vk_api\obj\Release\vk.Resources.resources
+C:\Users\pereyaslov\Documents\Visual Studio 2010\Projects\lastfmtovk\vk_api\obj\Release\vk_api.vbproj.GenerateResource.Cache
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\bin\Release\vk.dll.config
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\bin\Release\vk.dll
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\bin\Release\vk.pdb
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\bin\Release\vk.xml
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk.auth_window.resources
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk.Resources.resources
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk_api.vbproj.GenerateResource.Cache
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk.dll
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk.xml
+D:\Documents\dropbox\Projects\lastfmtovk\vk_api\obj\Release\vk.pdb
