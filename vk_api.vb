@@ -528,7 +528,7 @@ Public Class api
             Dim result As New List(Of group), parameters As New Dictionary(Of String, String)
             With parameters
                 If group_ids.Count = 1 Then .Add("group_id", group_ids(0)) Else .Add("group_ids", String.Join(",", group_ids))
-                .Add("V", "5.11")
+                .Add("v", "5.11")
                 If Not IsNothing(fields) Then .Add("filter", String.Join(",", fields))
             End With
             Dim s As XmlTextReader = api_request_no_parse("groups.getById", parameters)
@@ -981,9 +981,10 @@ Public Class api
     Public Class photos
         Public Shared Function getCount(Optional owner_id As Int64 = 0, Optional album_id As String = Nothing) As UInt32
             Dim parameters As New Dictionary(Of String, String)
-            If owner_id > 0 Then parameters.Add("owner_id", owner_id)
+            If owner_id <> 0 Then parameters.Add("owner_id", owner_id)
+            If Not IsNothing(album_id) Then parameters.Add("album_id", album_id)
             parameters.Add("count", 1)
-            parameters.Add("V", "5.11")
+            parameters.Add("v", "5.11")
             Dim doc As XmlDocument = api_request("photos.get", parameters)
             Dim count As Xml.XmlNode = doc.SelectNodes("/response/count").Item(0)
             Return Long.Parse(count.InnerText)
@@ -991,6 +992,7 @@ Public Class api
         Public Shared Function _get(Optional owner_id As Int64 = 0, Optional album_id As String = Nothing, Optional photo_ids As List(Of String) = Nothing, Optional rev As Boolean = True, Optional extended As Boolean = False, Optional offset As ULong = 0, Optional count As ULong = 0) As List(Of photo)
             Dim result As New List(Of photo)
             Dim parameters As New Dictionary(Of String, String)
+            If count = 0 Then count = getCount(owner_id, album_id)
             With parameters
                 If owner_id <> 0 Then .Add("owner_id", owner_id)
                 If Not IsNothing(album_id) Then .Add("album_id", album_id)
@@ -1009,6 +1011,7 @@ Public Class api
                 If offset > 0 Then
                     .Add("offset", offset)
                 End If
+                .Add("v", "5.11")
             End With
             result.AddRange(PhotoParser(api_request_no_parse("photos.get", parameters), "photos.get"))
             Return result
