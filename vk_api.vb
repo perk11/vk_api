@@ -154,8 +154,11 @@ Public Class api
         request_text = method & ".xml"
         If Not IsNothing(parameters) Then
             request_text = request_text & "?"
+            Dim i As UInteger = 0
             For Each s In parameters
-                request_text = request_text & "&" & System.Web.HttpUtility.UrlEncode(s.Key) & "=" & System.Web.HttpUtility.UrlEncode(s.Value)
+                If i > 0 Then request_text = request_text & "&"
+                request_text = request_text & System.Web.HttpUtility.UrlEncode(s.Key) & "=" & System.Web.HttpUtility.UrlEncode(s.Value)
+                i = i + 1
             Next
         End If
         Return "https://api.vk.com/method/" & request_text & "&access_token=" & token
@@ -501,19 +504,21 @@ Public Class api
             With parameters
                 .Add("user_id", user_id)
                 .Add("extended", IIf(extended, "1", "0"))
+                .Add("v", "5.11")
                 If Not IsNothing(filter) Then .Add("filter", String.Join(",", filter))
                 If Not IsNothing(fields) Then .Add("filter", String.Join(",", fields))
                 If offset > 0 Then .Add("offset", offset)
                 If count > 0 Then .Add("count", count)
             End With
             Dim s As XmlTextReader = api_request_no_parse("groups.get", parameters)
-
             While s.Read
 
                 If s.NodeType = Xml.XmlNodeType.Element Then
-                    If s.Name = "group" Then
+                    If extended And s.Name = "group" Then
                         result.Add(GroupParser(s.ReadSubtree))
 
+                    ElseIf Not extended And s.Name = "gid" Then
+                        result.Add(New group(s.ReadElementContentAsLong))
                     ElseIf s.Name = "error" Then
                         error_handler_TextReader(s, "groups.get")
                     End If
@@ -526,6 +531,19 @@ Public Class api
         End Function
         Public Shared Shadows Function getById(group_ids As List(Of String), Optional fields As List(Of String) = Nothing) As List(Of group)
             Dim result As New List(Of group), parameters As New Dictionary(Of String, String)
+            Dim badgroups As New List(Of String)
+            For Each gr In group_ids
+                If gr.Length > 6 Then
+                    If gr.Substring(0, 6) = "public" Then
+                        badgroups.Add(gr)
+
+                    End If
+                End If
+            Next
+            For Each gr In badgroups
+                group_ids.Remove(gr)
+                group_ids.Add(gr.Substring(6, gr.Length - 6))
+            Next
             With parameters
                 If group_ids.Count = 1 Then .Add("group_id", group_ids(0)) Else .Add("group_ids", String.Join(",", group_ids))
                 .Add("v", "5.11")
