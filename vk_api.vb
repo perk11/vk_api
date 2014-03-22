@@ -1029,7 +1029,7 @@ Public Class api
                 If offset > 0 Then
                     .Add("offset", offset)
                 End If
-                .Add("v", "5.11")
+                .Add("v", "5.16")
             End With
             result.AddRange(PhotoParser(api_request_no_parse("photos.get", parameters), "photos.get"))
             Return result
@@ -1172,15 +1172,19 @@ Public Class api
                                             .user_id = photo.ReadElementContentAsLong
                                         Case "created", "date"
                                             .created = New Date(1970, 1, 1, 0, 0, 0, 0).AddSeconds(photo.ReadElementContentAsLong).ToLocalTime ' Unix time to Date conversion
-                                        Case "src"
+                                        Case "photo_75"
+                                            .src_75 = photo.ReadElementContentAsString
+                                        Case "photo_130"
+                                            .src_130 = photo.ReadElementContentAsString
+                                        Case "src", "photo_604"
                                             .src = photo.ReadElementContentAsString
-                                        Case "src_small"
+                                        Case "src_small", "photo_807"
                                             .src_small = photo.ReadElementContentAsString
                                         Case "src_big"
                                             .src_big = photo.ReadElementContentAsString
-                                        Case "src_xbig"
+                                        Case "src_xbig", "photo_1280"
                                             .src_xbig = photo.ReadElementContentAsString
-                                        Case "src_xxbig"
+                                        Case "src_xxbig", "photo_2560"
                                             .src_xxbig = photo.ReadElementContentAsString
                                         Case "text"
                                             .text = Web.HttpUtility.HtmlDecode(photo.ReadElementContentAsString.Replace("<br>", vbNewLine))
@@ -1201,15 +1205,25 @@ Public Class api
         End Function
         <Serializable()> Public Class photo
 
-            Public pid As UInt64, aid As Long, owner_id As Int64, created As Date, src As String, src_small As String, src_big As String, src_xbig As String, src_xxbig As String, text As String, user_id As ULong
+            Public pid As UInt64, aid As Long, owner_id As Int64, created As Date, _
+                src As String, src_small As String, src_big As String, src_xbig As String, src_xxbig As String, src_130 As String, src_75 As String, _
+                text As String, user_id As ULong
             Public ReadOnly Property src_largest As String
                 Get
                     If Len(src_xxbig) > 0 Then
                         Return src_xxbig
                     ElseIf Len(src_xbig) > 0 Then
                         Return src_xbig
-                    Else
+                    ElseIf Len(src_big) > 0 Then
                         Return src_big
+                    ElseIf Len(src_small) > 0 Then
+                        Return src_small
+                    ElseIf Len(src) > 0 Then
+                        Return src
+                    ElseIf Len(src_130) > 0 Then
+                        Return src_130
+                    Else
+                        Return src_75
                     End If
                 End Get
             End Property
@@ -1485,7 +1499,13 @@ Public Class api
                     ULong.TryParse(users._get(New List(Of String)({txt}))(0).uid, uid)
                 Catch ex As Exception
                     If ex.Data("error_code") = 113 Then
-                        uid = 0
+                        Try
+                            Long.TryParse(groups.getById(txt).gid, uid)
+                            uid = -uid
+                        Catch
+                            uid = 0
+                        End Try
+
                     Else
                         Throw ex
                     End If
