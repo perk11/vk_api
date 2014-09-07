@@ -677,9 +677,11 @@ Public Class api
                                 .chat_id = message.ReadElementContentAsLong
                             Case "chat_active"
                                 Dim chat_active As String = message.ReadElementContentAsString, chat_users As New List(Of users.user)
-                                For Each uid In chat_active.Split(",")
-                                    chat_users.Add(New users.user(uid))
-                                Next
+                                If chat_active.Length > 0 Then
+                                    For Each uid In chat_active.Split(",")
+                                        chat_users.Add(New users.user(uid))
+                                    Next
+                                End If
                                 .chat_active = chat_users
                             Case "users_count"
                                 .users_count = message.ReadElementContentAsLong
