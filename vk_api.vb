@@ -1320,6 +1320,43 @@ Public Class api
             End Function
         End Class
     End Class
+    Public Class board
+        'https://vk.com/dev/board.addComment
+        Public Shared Function addComment(group_id As ULong, topic_id As ULong, Optional text As String = Nothing, _
+                                          Optional attachments As List(Of attachment) = Nothing, Optional from_group As Boolean = False, Optional sticker_id As ULong = Nothing) As String
+            Dim parameters As New Dictionary(Of String, String)
+            If text = Nothing And IsNothing(attachments) Then
+                Throw New Exception("Either text or attachments should be specified")
+            End If
+            With parameters
+                .Add("v", "5.28")
+                .Add("group_id", group_id)
+                .Add("topic_id", topic_id)
+                If Not text = Nothing Then
+                    .Add("text", text)
+                End If
+                If Not IsNothing(attachments) Then
+                    .Add("attachments", String.Join(",", attachments))
+                End If
+                .Add("from_group", IIf(from_group, "1", "0"))
+                If Not sticker_id = Nothing Then
+                    .Add("sticker_id", sticker_id)
+                End If
+            End With
+            Dim doc As XmlDocument = api_request("board.addComment", parameters)
+            Dim result As Xml.XmlNode = doc.SelectNodes("/response").Item(0)
+            Return result.InnerText
+        End Function
+        Public Class attachment
+            Public type As String, owner_id As Long, media_id As Long
+            Public Shadows ReadOnly Property ToString
+                Get
+                    Return Me.type & Me.owner_id & "_" & Me.media_id
+                End Get
+            End Property
+        End Class
+    End Class
+
     Shared Sub error_handler_TextReader(s As XmlTextReader, Optional action As String = Nothing)
         Dim error_code As Long, error_message As String = Nothing
         While s.Read
@@ -1358,7 +1395,6 @@ Public Class api
         ex.Data("error_code") = error_code
         Throw (ex)
     End Sub
-
     Public Class custom
         Public Shared playend As Date
         Public Shared Sub set_status_by_track_name(name As audio.track.trackname, Optional target_ids As List(Of Long) = Nothing)
