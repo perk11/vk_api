@@ -1434,6 +1434,8 @@ Public Class api
                             End If
                         End While
                         result.Add(current_comment)
+                    ElseIf comments_response.Name = "error" Then
+                        error_handler_TextReader(comments_response, "board.getComments")
                     End If
                 End If
             End While
