@@ -1321,9 +1321,11 @@ Public Class api
         End Class
     End Class
     Public Class board
+
+        'Добавить комментарий в теме
         'https://vk.com/dev/board.addComment
         Public Shared Function addComment(group_id As ULong, topic_id As ULong, Optional text As String = Nothing, _
-                                          Optional attachments As List(Of attachment) = Nothing, Optional from_group As Boolean = False, Optional sticker_id As ULong = Nothing) As String
+                                          Optional attachments As List(Of attachment) = Nothing, Optional from_group As Boolean = False, Optional sticker_id As ULong = Nothing) As ULong
             Dim parameters As New Dictionary(Of String, String)
             If text = Nothing And IsNothing(attachments) Then
                 Throw New Exception("Either text or attachments should be specified")
@@ -1345,8 +1347,108 @@ Public Class api
             End With
             Dim doc As XmlDocument = api_request("board.addComment", parameters)
             Dim result As Xml.XmlNode = doc.SelectNodes("/response").Item(0)
-            Return result.InnerText
+            Return ULong.Parse(result.InnerText)
         End Function
+        'Удаляет сообщение темы в обсуждениях сообщества. Возвращает True при успешном удалении
+        'https://vk.com/dev/board.deleteComment
+        Public Shared Function deleteComment(group_id As ULong, topic_id As ULong, comment_id As ULong) As Boolean
+            Return deleteRestoreComment(group_id, topic_id, comment_id, "board.deleteComment")
+        End Function
+        'Восстанавливает удаленное сообщение темы в обсуждениях группы. 
+        'https://vk.com/dev/board.restoreComment
+        Public Shared Function restoreComment(group_id As ULong, topic_id As ULong, comment_id As ULong) As Boolean
+            Return deleteRestoreComment(group_id, topic_id, comment_id, "board.restoreComment")
+        End Function
+        Protected Shared Function deleteRestoreComment(group_id As ULong, topic_id As ULong, comment_id As ULong, method As String) As Boolean
+            Dim parameters As New Dictionary(Of String, String)
+            With parameters
+                .Add("v", "5.28")
+                .Add("group_id", group_id)
+                .Add("topic_id", topic_id)
+                .Add("comment_id", comment_id)
+            End With
+            Dim doc As XmlDocument = api_request(method, parameters)
+            Dim result As Xml.XmlNode = doc.SelectNodes("/response").Item(0)
+            If result.InnerText = "1" Then
+                Return True
+            Else
+                Return False
+            End If
+        End Function
+        'Возвращает список сообщений в указанной теме. 
+        'https://vk.com/dev/board.getComments
+        Public Shared Function getComments(group_id As ULong, topic_id As ULong, Optional need_likes As Boolean = False, Optional offset As ULong = 0, _
+                                           Optional count As UInteger = 20, Optional extended As Boolean = False, Optional sort_ascending As Boolean = True) _
+                                       As List(Of comment)
+            Dim parameters As New Dictionary(Of String, String)
+            If count > 100 Then
+                Throw New Exception("Max count is 100")
+            End If
+            If extended Then
+                Throw New NotImplementedException("Getting extended info in comments is not implemented")
+            End If
+            With parameters
+                .Add("v", "5.28")
+                .Add("group_id", group_id)
+                .Add("topic_id", topic_id)
+                .Add("need_likes", IIf(need_likes, "1", "0"))
+                .Add("offset", offset)
+                .Add("count", count)
+                .Add("extended", IIf(need_likes, "1", "0"))
+                .Add("sort", IIf(sort_ascending, "asc", "desc"))
+            End With
+            Dim comments_response As XmlTextReader = api_request_no_parse("board.getComments", parameters)
+            Dim result As New List(Of comment)
+            While comments_response.Read
+                If comments_response.NodeType = XmlNodeType.Element Then
+                    If comments_response.Name = "comment" Then
+                        Dim comment = comments_response.ReadSubtree, current_comment As New comment()
+                        While comment.Read
+                            If comments_response.NodeType = XmlNodeType.Element Then
+                                With current_comment
+                                    Select Case comments_response.Name
+                                        Case "id"
+                                            .id = comments_response.ReadElementContentAsLong
+                                        Case "from_id"
+                                            .from_id = comments_response.ReadElementContentAsLong
+                                        Case "date"
+                                            .post_date = New Date(1970, 1, 1, 0, 0, 0, 0).AddSeconds(comments_response.ReadElementContentAsLong).ToLocalTime ' Unix time to Date conversion
+                                        Case "text"
+                                            .text = comments_response.ReadElementContentAsString
+                                        Case "likes"
+                                            Dim likes = comments_response.ReadSubtree
+                                            While likes.Read
+                                                If comments_response.NodeType = XmlNodeType.Element Then
+                                                    Select Case comments_response.Name
+                                                        Case "count"
+                                                            .likes_count = comments_response.ReadElementContentAsString
+                                                        Case "user_likes"
+                                                            .user_likes = System.Convert.ToBoolean(comments_response.ReadElementContentAsInt)
+                                                        Case "can_like"
+                                                            .can_like = System.Convert.ToBoolean(comments_response.ReadElementContentAsInt)
+                                                    End Select
+                                                End If
+                                            End While
+                                    End Select
+                                End With
+                            End If
+                        End While
+                        result.Add(current_comment)
+                    End If
+                End If
+            End While
+            Return result
+        End Function
+        Public Class comment
+            Public id As ULong
+            Public from_id As Long
+            Public post_date As DateTime
+            Public text As String
+            Public attachments As List(Of attachment)
+            Public likes_count As ULong = Nothing
+            Public user_likes As Boolean = Nothing
+            Public can_like As Boolean = Nothing
+        End Class
         Public Class attachment
             Public type As String, owner_id As Long, media_id As Long
             Public Shadows ReadOnly Property ToString
